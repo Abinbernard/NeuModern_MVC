@@ -1,0 +1,58 @@
+﻿@model NeuModern.Models.Offer
+@{
+    ViewData["Title"] = "Delete Offer";
+}
+
+<h2>Delete Offer</h2>
+
+<h3>Are you sure you want to delete this offer?</h3>
+<div>
+    <h4>Offer</h4>
+    <hr />
+   
+        <form method="post">
+            <div class="border p-3 mt-4 border-primary">
+                <div class="row pb-2">
+                </div>
+                <div asp-validation-summary="ModelOnly"></div>
+                <div class="mb-3">
+                    <label asp-for="OfferName"></label>
+                    <input asp-for="OfferName" type="text" disabled class="form-control" />
+
+                </div>
+                <div class="mb-3">
+                    <label asp-for="OfferDescription"></label>
+                    <input asp-for="OfferDescription" disabled class="form-control" />
+
+                </div>
+                <div class="mb-3">
+                    <label asp-for="OfferDiscount"></label>
+                    <input asp-for="OfferDiscount" type="text" disabled class="form-control" />
+
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Offertype"></label>
+                    <input asp-for="Offertype" disabled class="form-control" />
+
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-danger form-control">Delete</button>
+                    </div>
+                    <div class="col-6">
+                        <a asp-controller="Offer" asp-action="Index" class="btn btn-outline-primary form-control">Back To List</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+
+    
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

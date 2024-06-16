@@ -1,0 +1,311 @@
+﻿@using NeuModern.Models.ViewModel
+
+@model ShoppingCartVM
+
+<form method="post" id="yourFormId">
+	<br />
+	<div class="container">
+		<div class="card shadow border-0 mb-5">
+
+			<div class="card-header bg-primary bg-gradient text-light ml-0 py-4">
+				<div class="row px-4">
+					<div class="col-6">
+						<h5 class="pt-2 text-white">
+							ORDER SUMMARY
+						</h5>
+					</div>
+					<div class="col-6 text-end">
+						<a asp-action="Index" class="btn btn-outline-danger btn-sm">Back to Cart</a>
+					</div>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="container rounded p-2">
+					<div class="row">
+						<div class="col-12 col-lg-6 pb-4">
+							<div class="row">
+								<h4 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-info">Shipping Details:</span>
+								</h4>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>Name</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.Name" class="form-control" />
+									<span asp-validation-for="OrderHeader.Name" class="text-danger"></span>
+								</div>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>Phone</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.PhoneNumber" class="form-control" />
+									<span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger"></span>
+								</div>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>Street Address</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.StreetAddress" class="form-control" />
+									<span asp-validation-for="OrderHeader.StreetAddress" class="text-danger"></span>
+								</div>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>City</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.City" class="form-control" />
+									<span asp-validation-for="OrderHeader.City" class="text-danger"></span>
+
+								</div>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>State</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.State" class="form-control" />
+									<span asp-validation-for="OrderHeader.State" class="text-danger"></span>
+
+								</div>
+							</div>
+							<div class="row my-1">
+								<div class="col-3">
+									<label>Postal Code</label>
+								</div>
+								<div class="col-9">
+									<input asp-for="OrderHeader.PostalCode" class="form-control" />
+									<span asp-validation-for="OrderHeader.PostalCode" class="text-danger"></span>
+
+								</div>
+							</div>
+							<div class="row justify-content-center">
+								<!-- Added this row for centering -->
+								<a asp-area="Customer" asp-controller="MultipleAddress" asp-action="Index" class="btn btn-warning mt-3 text-center">Set Address</a>
+							</div>
+						</div>
+						<div class="col-12 col-lg-5 offset-lg-1">
+							<div class="row">
+								<div class="col-md-8">
+									<div class="form-group">
+									</div>
+								</div>
+							</div>
+							<h4 class="d-flex justify-content-between align-items-center mb-3">
+								<span class="text-info mt-3">Order Summary:</span>
+							</h4>
+							<ul class="list-group mb-3">
+								@foreach (var item in Model.ShoppingCartList)
+								{
+									<li class="list-group-item d-flex justify-content-between">
+										<div class="d-none d-lg-block col-lg-1 text-center py-2">
+											<img src="@item.Product.ProductImages" class="rounded" width="100%" />
+										</div>
+										<div>
+											<h6 class="me-5 my-0">@item.Product.Name</h6>
+											<small class="me-5 text-muted">Quantity: @item.Count</small>
+										</div>
+										<span class="text-muted">@((item.OfferPrice * item.Count).ToString("c")) </span>
+									</li>
+								}
+								<li class="list-group-item d-flex justify-content-between bg-light">
+									<small class="text-info">Total (INR)</small>
+									<strong class="text-info">@Model.OrderHeader.OrderTotal.ToString("c")</strong>
+								</li>
+								<li class="list-group-item d-flex justify-content-between align-items-center text-info">
+									Coupon Discount
+									<span id="newTotal"></span>
+								</li>
+								<li class="list-group-item d-flex justify-content-between align-items-center text-info">
+									New Total
+									<span id="discountPrice"></span>
+								</li>
+								<li class="list-group-item d-flex justify-content-between align-items-center">
+									Shipping
+									<span>Free</span>
+								</li>
+								<li class="list-group-item d-flex justify-content-between align-items-center">
+									<input id="couponInput" asp-for="OrderHeader.CouponCode" class="form-control" aria-required="true" placeholder="Coupon" />
+									<input asp-for="OrderHeader.CouponId" hidden />
+									<a id="applyCouponButton" class="eyebrow underline action btn btn-primary">Check</a>
+								</li>
+								
+
+
+								<li class="list-group-item align-items-center">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="walletCheckbox" value="ApplyWallet">
+										<label class="form-check-label" for="walletCheckbox">Apply Wallet : <span class="text-bg-light">@Model.ApplicationUser.Wallet</span></label>
+										<div>
+											<span id="WalletAmount"> </span>
+											<span id="newWalletAmount"></span>
+										</div>
+										<div>
+											<span id="Message" class="text-danger"></span>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" asp-for="OrderHeader.PaymentMethod" value="COD" id="flexRadioDefault1">
+								<label class="form-check-label" for="flexRadioDefault1">Cash On Delivery</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" asp-for="OrderHeader.PaymentMethod" value="OnlinePayment" id="flexRadioDefault2" checked>
+								<label class="form-check-label" for="flexRadioDefault2">Online Payment</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="radio" asp-for="OrderHeader.PaymentMethod" value="Wallet" id="flexRadioDefault2" checked>
+								<label class="form-check-label" for="flexRadioDefault2">Wallet</label>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+			<div class="card-footer">
+				<div class="row">
+					<div class="col-12 col-md-8 pt-2">
+						<p style="color:maroon; font-size:14px;">
+							Estimate Arrival Date:
+							@DateTime.Now.AddDays(7).ToShortDateString()  -  @DateTime.Now.AddDays(14).ToShortDateString()
+						</p>
+					</div>
+					<div class="col-12 col-md-4">
+						<button type="submit" value="Place Order" class="btn btn-primary form-control">Place Order</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+<script src="~/js/vendor.min.js"></script>
+<script src="~/js/app.js"></script>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+@section Scripts {
+	<script>
+		
+		$(document).ready(function () {
+			// Attach a click event to the Apply Coupon button
+			$("#applyCouponButton").click(function () {
+				var coupon = $("#couponInput").val();
+				var totalAmount = parseFloat(@Model.OrderHeader.OrderTotal);
+
+				var url = "/Customer/Cart/Coupon?coupon=" + coupon + "&OrderTotal=" + totalAmount;
+				$.ajax({
+					url: url,
+					type: "GET",
+					success: function (response) {
+						if (response.success) {
+							var discountPrice = parseFloat(response.discountPrice);
+							var newTotal = parseFloat(response.newTotal);
+
+							$("#discountPrice").text(discountPrice.toFixed(2));
+							$("#newTotal").text(newTotal.toFixed(2));
+
+							// Update the total amount on the page
+							$(".text-info strong").text(newTotal.toFixed(2));
+						} else {
+							console.log(response.errorMessage);
+							toastr.error(response.errorMessage);
+						}
+					},
+					error: function (xhr, status, error) {
+						// Handle the error response, such as displaying an error message
+						console.log(error);
+						toastr.error("An error occurred while applying the coupon.");
+					}
+				});
+			});
+
+			// Attach change event to the Wallet checkbox
+			$('#walletCheckbox').change(function () {
+				if (this.checked) {
+					applyWallet();
+				} else {
+					notApplyWallet();
+				}
+			});
+		});
+
+		function applyWallet() {
+			var totalAmount = @Model.OrderHeader.OrderTotal;
+			var userId = '@Model.OrderHeader.ApplicationUser?.Id' || '';
+			var url = `/User/Cart/CheckWallet?totalAmount=${totalAmount}&userId=${userId}`;
+			$.ajax({
+				url: url,
+				method: 'POST',
+				success: function (response) {
+					if (response.success) {
+						var newWalletAmount = parseFloat(response.newWalletAmount);
+						var message = response.message;
+
+						$("#newWalletAmount").text("New Wallet Amount: " + newWalletAmount.toFixed(2));
+						$("#Message").text(message);
+
+						// Update the total amount on the page
+						$(".text-info strong").text(response.newTotal.toFixed(2));
+					} else {
+						var message = response.message;
+
+						$("#newWalletAmount").text('');
+						$("#Message").text(message);
+					}
+				},
+				error: function (error) {
+					console.log(error);
+					toastr.error("An error occurred while applying the wallet.");
+				}
+			});
+		}
+
+		function notApplyWallet() {
+			var totalAmount = @Model.OrderHeader.OrderTotal;
+			var userId = '@Model.OrderHeader.ApplicationUser?.Id' || '';
+			var url = `/User/Cart/CheckWallet?totalAmount=${totalAmount}&userId=${userId}`;
+			$.ajax({
+				url: url,
+				method: 'POST',
+				success: function (response) {
+					if (response.success) {
+						$("#Message").text('');
+						$("#WalletAmount").text('');
+						$("#newWalletAmount").text('');
+
+						// Revert to the original total amount
+						$(".text-info strong").text(totalAmount.toFixed(2));
+					}
+				},
+				error: function (error) {
+					console.log(error);
+					toastr.error("An error occurred while removing the wallet.");
+				}
+			});
+		}
+
+	
+
+	</script>
+}
+
+
+
+
+
+
+

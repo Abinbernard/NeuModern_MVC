@@ -1,0 +1,100 @@
+﻿@model Coupon
+
+<div class="col-9 align-content-center">
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-dark bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Edit Coupon</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" class="row">
+
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="border p-3 mt-4 border-primary">
+                            <div asp-validation-summary="ModelOnly"></div>
+                            <div class="mb-3 ">
+                                <label asp-for="CouponCode"></label>
+                                <input asp-for="CouponCode" class="form-control border-0 shadow" />
+                                <span asp-validation-for="CouponCode" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="DiscountAmount"></label>
+                                <input asp-for="DiscountAmount" class="form-control border-0 shadow" />
+                                <span asp-validation-for="DiscountAmount" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="MinAmount"></label>
+                                <input asp-for="MinAmount" class="form-control border-0 shadow" />
+                                <span asp-validation-for="MinAmount" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3 ">
+                                <label asp-for="DiscountPercentage"></label>
+                                <input asp-for="DiscountPercentage" class="form-control border-0 shadow" />
+                                <span asp-validation-for="DiscountPercentage" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3 ">
+
+                                <label asp-for="CouponType" class="form-label">Discount Type</label>
+                                <select asp-for="CouponType" id="typeSelect" class="form-control border-0 shadow">
+                                    <option value="" disabled selected>Select the Discount Type</option>
+                                    @foreach (var type in Enum.GetValues(typeof(NeuModern.Models.Coupon.DiscountType)))
+                                    {
+                                        <option value="@type">@type</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CouponType" class="text-danger"></span>
+
+
+                            </div>
+                            <div class="mb-3">
+                                <div>
+                                    <input type="radio" asp-for="IsValid" name="IsValid" value="valid" />
+                                    <label class="ms-2">Valid</label>
+                                </div>
+                                <div>
+                                    <input type="radio" asp-for="IsValid" name="IsValid" value="Invalid" />
+                                    <label class="ms-2">InValid</label>
+                                </div>
+
+                                <span asp-validation-for="IsValid" class="text-danger"></span>
+                            </div>
+
+
+
+
+                        </div>
+
+                        <div class="row pt-2">
+                            <div class="col-6 col-md-3">
+                                <button type="submit" class="btn btn-primary form-control">Update</button>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-outline-primary border  form-control">
+                                    Back to List
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@section Scripts {
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}
+

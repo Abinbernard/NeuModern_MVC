@@ -1,0 +1,291 @@
+﻿@model List<Product>
+
+@{
+
+    var activeProducts = Model.Where(product => product.Category.IsActive);
+}
+<form method="get" action="@Url.Action("Search", "Home", new { area = "Customer" })" class="d-flex justify-content-end">
+    <div class="form-group rounded-pill">
+        <input type="text" id="search" name="searchString" class="form-control rounded-pill" />
+    </div>
+    <button type="submit" class="btn btn-primary h-25 rounded-pill mx-1 m">Search</button>
+</form>
+
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-3 border-end border-gray">
+            <h5>Filter</h5>
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select id="category" class="form-control">
+                    <option value="">All</option>
+                    @foreach (var category in Model.Select(p => p.Category.Name).Distinct())
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price Range:</label>
+                <select id="price" class="form-control">
+                    <option value="">All</option>
+                    <option value="250-500">250 - 500</option>
+                    <option value="500-1000">500 - 1000</option>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy" class="form-control">
+                    <option value="">All</option>
+                    <option value="priceLowToHigh">Price: Low to High</option>
+                    <option value="priceHighToLow">Price: High to Low</option>
+                    <option value="nameAsc">A to Z</option>
+                    <option value="nameDesc">Z to A</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div class="col-md-9">
+            <div class="row g-4" id="product-list">
+                @foreach (var product in activeProducts)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4 product-card" data-category="@product.Category.Name" data-price="@product.OfferPrice">
+                        <div class="card border-0 shadow border-top border-5 rounded position-relative">
+                            <div class="card-body">
+
+
+                                <div class="position-relative">
+                                    @if (product.ProductImages != null && product.ProductImages.Count() > 0)
+                                    {
+                                        <a asp-action="Details" asp-controller="Home" asp-route-productid="@product.Id">
+                                            <img src="@product.ProductImages.FirstOrDefault().ImageUrl" class="card-img-top rounded img-fluid" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+
+                                        <img src="https://placehold.co/500x500/png" alt="Placeholder" class="card-img-top rounded img-fluid" />
+                                    }
+
+                                    <form method="post" action="@Url.Action("AddToWishlist", "Home")" class="position-absolute top-0 end-0 m-2">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+
+                                        <button type="button" class="btn btn-outline-danger btn-sm wishlist-button" data-product-id="@product.Id"><i class="bi bi-heart"></i></button>
+
+                                    </form>
+                                </div>
+
+                                <div class="card-body pb-0">
+                                    <div class="pl-1">
+                                        <p class="card-title h5 text-dark text-uppercase text-center">@product.Brand</p>
+                                    </div>
+                                    <div class="pl-1">
+                                        <p class=" text-dark text-center">Price: ₹<span>@product.OfferPrice</span></p>
+                                    </div>
+                                </div>
+                                <div>
+                                    @if (product.StockQuantity < 1)
+                                    {
+                                        <a asp-action="Details" asp-route-productId="@product.Id" class="btn btn-danger bg-gradient border-0 form-control">Out Of Stock</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Details" asp-route-productId="@product.Id" class="btn btn-primary bg-gradient border-0 form-control">View Product</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mb-5">
+        <ul class="pagination">
+            @if (Model.Any())
+            {
+                var currentPage = ViewBag.CurrentPage ?? 1;
+                var itemsPerPage = 6;
+                var totalProducts = Model.Count();
+                var totalPages = (int)Math.Ceiling(totalProducts / (double)itemsPerPage);
+
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="#" onclick="changePage(@currentPage - 1)">Previous</a>
+                </li>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="#" onclick="changePage(@i)">@i</a>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="#" onclick="changePage(@currentPage + 1)">Next</a>
+                </li>
+            }
+        </ul>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+@section Scripts {
+    <script>
+
+        var currentPage = 1;
+        var itemsPerPage = 6;
+
+
+
+        function filterProducts() {
+            var selectedCategory = $('#category').val();
+            var selectedPriceRange = $('#price').val();
+
+            $('.product-card').each(function () {
+                var productCategory = $(this).data('category');
+                var productPrice = parseFloat($(this).data('price'));
+
+                var showProduct = true;
+
+
+                if (selectedCategory && selectedCategory !== "" && selectedCategory !== productCategory) {
+                    showProduct = false;
+                }
+
+
+                if (selectedPriceRange && selectedPriceRange !== "" && !isPriceInRange(productPrice, selectedPriceRange)) {
+                    showProduct = false;
+                }
+
+
+                if (showProduct) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            var totalProducts = $('.product-card:visible').length;
+            var totalPages = Math.ceil(totalProducts / itemsPerPage);
+
+
+            $('.pagination').empty();
+
+
+            if (totalPages > 0) {
+                for (var i = 1; i <= totalPages; i++) {
+                    $('.pagination').append('<li class="page-item ' + (i === currentPage ? 'active' : '') + '"><a class="page-link" href="#" onclick="changePage(' + i + ')">' + i + '</a></li>');
+                }
+            }
+        }
+
+        function isPriceInRange(price, range) {
+            var rangeValues = range.split('-');
+            var minPrice = parseFloat(rangeValues[0]);
+            var maxPrice = parseFloat(rangeValues[1]);
+
+            return price >= minPrice && price <= maxPrice;
+        }
+
+        $(document).ready(function () {
+
+            $('#category, #price').change(function () {
+                filterProducts();
+                currentPage = 1;
+            });
+
+            $('#sortBy').change(function () {
+                filterProducts();
+            });
+
+            filterProducts();
+        });
+
+
+        function sortByPriceLowToHigh() {
+            var products = $('.product-card').get();
+            products.sort(function (a, b) {
+                var priceA = parseFloat($(a).data('price'));
+                var priceB = parseFloat($(b).data('price'));
+                return priceA - priceB;
+            });
+            $('#product-list').empty().append(products);
+        }
+
+        function sortByPriceHighToLow() {
+            var products = $('.product-card').get();
+            products.sort(function (a, b) {
+                var priceA = parseFloat($(a).data('price'));
+                var priceB = parseFloat($(b).data('price'));
+                return priceB - priceA;
+            });
+            $('#product-list').empty().append(products);
+        }
+
+
+        function sortByNameAToZ() {
+            var products = $('.product-card').get();
+            products.sort(function (a, b) {
+                var nameA = $(a).find('.card-title').text().toLowerCase();
+                var nameB = $(b).find('.card-title').text().toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            $('#product-list').empty().append(products);
+        }
+
+
+        function sortByNameZToA() {
+            var products = $('.product-card').get();
+            products.sort(function (a, b) {
+                var nameA = $(a).find('.card-title').text().toLowerCase();
+                var nameB = $(b).find('.card-title').text().toLowerCase();
+                return nameB.localeCompare(nameA);
+            });
+            $('#product-list').empty().append(products);
+        }
+
+
+
+        $(document).ready(function () {
+
+            $('#sortBy').change(function () {
+                var sortBy = $(this).val();
+                if (sortBy === 'priceLowToHigh') {
+                    sortByPriceLowToHigh();
+                } else if (sortBy === 'priceHighToLow') {
+                    sortByPriceHighToLow();
+                } else if (sortBy === 'nameAsc') {
+                    sortByNameAToZ();
+                } else if (sortBy === 'nameDesc') {
+                    sortByNameZToA();
+                }
+            });
+        });
+
+
+
+    </script>
+}
+
+
+
+
+
+
+

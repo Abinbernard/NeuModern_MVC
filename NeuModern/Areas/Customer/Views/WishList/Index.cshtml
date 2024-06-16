@@ -1,0 +1,71 @@
+﻿ @model IEnumerable<WishList>
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title text-center card-title">Wish List </h2>
+            <p class=" text-center mt-2">All Your Favourites Are Here.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center">
+            <img src="https://img.freepik.com/free-vector/no-data-concept-illustration_114360-2506.jpg?w=996&t=st=1714889186~exp=1714889786~hmac=af1dd2f48a8b94b987eb88763004f1a7530178e0f0ef12d67036a805fd8f3d2c" alt="Empty Wishlist" class="img-fluid mb-3 " style="width:640px">
+            <p>Your wishlist is empty.</p>
+            <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary text-uppercase"><small>Start Shopping</small></a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow">
+                        <div class="card-body">
+                            @if (item.Product.ProductImages != null && item.Product.ProductImages.Any())
+                            {
+                                <a asp-action="Details" asp-controller="Home" asp-route-productid="@item.Product.Id" class="img-fluid">
+                                    <img src="@item.Product.ProductImages.FirstOrDefault().ImageUrl" alt="Product" class="card-img-top">
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Details" asp-controller="Home" asp-route-id="@item.Product.Id" class="img-fluid">
+                                    <img src="https://placehold.co/300x200" alt="Product" class="card-img-top">
+                                </a>
+                            }
+
+                            <div class="card-body pb-0">
+                                <div class="pl-1">
+                                    <p class="card-title h5 text-dark text-uppercase text-center">@item.Product.Brand</p>
+                                </div>
+                                <div class="pl-1">
+                                    <p class=" text-dark text-center">Price: ₹<span>@item.Product.OfferPrice</span></p>
+                                </div>
+                            </div>
+
+                            @if (item.Product.StockQuantity <= 0)
+                            {
+                                <p class="card-text text-center text-danger">Out Of Stock</p>
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                <a asp-action="Details" asp-controller="Home" asp-route-productId="@item.ProductId" class="btn btn-primary btn-sm">
+                                    <i class="material-icons md-edit me-1"></i> View Details
+                                </a>
+
+                                <a asp-action="RemoveFromWishlist" asp-controller="WishList" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
+                                    <i class="material-icons md-delete_forever me-1"></i> Remove from Wishlist
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</section>

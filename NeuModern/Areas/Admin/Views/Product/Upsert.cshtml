@@ -1,0 +1,172 @@
+﻿@using NeuModern.Models.ViewModel
+
+
+@model ProductVM
+
+<div class="col-9 align-content-center">
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-warning bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">@(Model.Product.Id != 0 ? "Update" : "Create") Product</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" class="row" enctype="multipart/form-data">
+                <input asp-for="Product.Id" hidden />
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="border p-3 mt-4 border-primary">
+                            <div asp-validation-summary="ModelOnly"></div>
+                            <div class="mb-3 ">
+                                <label asp-for="Product.Name"></label>
+                                <input asp-for="Product.Name" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Name" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Product.Description"></label>
+                                <input asp-for="Product.Description" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Description" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Product.Size"></label>
+                                <input asp-for="Product.Size" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Size" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3 ">
+                                <label asp-for="Product.StockQuantity"></label>
+                                <input asp-for="Product.StockQuantity" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.StockQuantity" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Product.Brand"></label>
+                                <input asp-for="Product.Brand" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Brand" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3 ">
+                                <label asp-for="Product.Discount"></label>
+                                <input asp-for="Product.Discount" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Discount" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Product.OfferPrice"></label>
+                                <input asp-for="Product.OfferPrice" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.OfferPrice" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3 ">
+                                <label asp-for="Product.Price"></label>
+                                <input asp-for="Product.Price" class="form-control border-0 shadow" />
+                                <span asp-validation-for="Product.Price" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3 ">
+                                <label asp-for="Product.Category.Name"></label>
+                                <select asp-for="@Model.Product.CategoryId" asp-items="@Model.CategoryList" class="form-control border-0 shadow">
+                                    <option disabled selected>--Select Category--</option>
+                                </select>
+
+                                <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Product.ProductImages"></label>
+                                <input type="file" name="files" id="imageFilesInput" class="form-control border-0 shadow" multiple />
+                                <span asp-validation-for="Product.ProductImages" class="text-danger"></span>
+                                <div id="imagePreviewContainer" class="mt-2"></div>
+
+                            </div>
+                            <div class="col-12">
+                                <div class="row">
+                                    @if (Model.Product.ProductImages != null)
+                                    {
+                                        foreach (var image in Model.Product.ProductImages)
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="border p-1  text-center">
+                                                    <img src="@image.ImageUrl" style="max-width: 100%; max-height: 150px; border-radius: 5px; border: 1px solid #bbb9b9;" />
+                                                    <a asp-action="DeleteImage" class="btn btn-danger mt-2" asp-route-imageId="@image.Id">
+                                                        <i class="bi bi-trash-fill"></i>Delete
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    @if (Model.Product.Id != 0)
+                                    {
+                                        <button type="submit" class="btn btn-success form-control">Update</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-success form-control">Create</button>
+                                    }
+                                </div>
+                                <div class="col-6">
+                                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary form-control">Back To List</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}
+
+<script>
+    document.getElementById('imageFilesInput').addEventListener('change', function (e) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = '';
+
+        let files = e.target.files;
+        let filesArray = Array.from(files);  // Convert FileList to Array for easier manipulation
+
+        filesArray.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.style.maxWidth = '200px';
+                img.style.maxHeight = '200px';
+                img.className = 'img-thumbnail mt-2 mr-2';
+
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'img-wrapper position-relative d-inline-block mr-2 mb-2';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'btn btn-danger position-absolute';
+                deleteButton.style.top = '10px';
+                deleteButton.style.right = '10px';
+                deleteButton.innerHTML = 'Delete';
+
+                deleteButton.addEventListener('click', function () {
+                    filesArray = filesArray.filter((_, i) => i !== index);  // Remove the deleted file from the array
+                    const dataTransfer = new DataTransfer();
+                    filesArray.forEach((file) => dataTransfer.items.add(file));
+                    document.getElementById('imageFilesInput').files = dataTransfer.files;
+                    imgWrapper.remove();
+                });
+
+                imgWrapper.appendChild(img);
+                imgWrapper.appendChild(deleteButton);
+                previewContainer.appendChild(imgWrapper);
+            }
+
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+

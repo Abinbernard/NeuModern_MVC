@@ -1,0 +1,37 @@
+﻿@model IEnumerable<NeuModern.Models.Offer>
+@{
+    ViewData["Title"] = "Offers";
+}
+
+<h2>Offers</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Offer</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.First().OfferName)</th>
+            <th>@Html.DisplayNameFor(model => model.First().OfferDescription)</th>
+            <th>@Html.DisplayNameFor(model => model.First().OfferDiscount)</th>
+            <th>@Html.DisplayNameFor(model => model.First().Offertype)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var offer in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => offer.OfferName)</td>
+                <td>@Html.DisplayFor(modelItem => offer.OfferDescription)</td>
+                <td>@Html.DisplayFor(modelItem => offer.OfferDiscount)</td>
+                <td>@Html.DisplayFor(modelItem => offer.Offertype)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@offer.Id" class="btn btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@offer.Id" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
