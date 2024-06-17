@@ -1,5 +1,8 @@
 ﻿
 
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +22,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using NeuModern.Models;
 
+using NeuModern.Models;
 
 
 namespace NeuModern.Areas.Identity.Pages.Account
@@ -117,7 +120,8 @@ namespace NeuModern.Areas.Identity.Pages.Account
             [MinLength(2, ErrorMessage = "Name must be at least 2 characters long.")]
             [MaxLength(50, ErrorMessage = "Name cannot exceed 50 characters.")]
             public string Name { get; set; }
-           
+          
+
         }
 
 
@@ -143,6 +147,8 @@ namespace NeuModern.Areas.Identity.Pages.Account
         }
 
 
+
+
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -155,7 +161,6 @@ namespace NeuModern.Areas.Identity.Pages.Account
                     UserName = Input.Email,
                     Email = Input.Email,
                     Name = Input.Name,
-                 
                     EmailConfirmed = false,
                     TwoFactorEnabled = true // Enable Two-Factor Authentication
                 };

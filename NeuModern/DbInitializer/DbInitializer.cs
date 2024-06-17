@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NeuModern.Areas.Identity.Data;
+using NeuModern.DbInitializer;
 using NeuModern.Models;
 
 namespace NeuModern.DbInitializer
@@ -63,3 +64,9 @@ namespace NeuModern.DbInitializer
         }
     }
 }
+
+
+
+
+
+
