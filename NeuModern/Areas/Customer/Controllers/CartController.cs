@@ -7,6 +7,8 @@ using NeuModern.Repository;
 using NeuModern.Repository.IRepository;
 using Stripe;
 using Stripe.Checkout;
+using Stripe.Climate;
+using Stripe.Issuing;
 using System.Security.Claims;
 using static System.Net.WebRequestMethods;
 
@@ -59,78 +61,92 @@ namespace NeuModern.Areas.Customer.Controllers
             }
             
         }
-       
-        public IActionResult Summary()
+
+      
+
+
+        public IActionResult Summary(int? id)
         {
             try
             {
                 var claimsIdentity = (ClaimsIdentity)User.Identity;
                 var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-                var shoppingCartItems = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId, includeProperties: "Product");
-                //var coupons = _unitOfWork.Coupon.GetAll();
-                var validShoppingCartItems = new List<ShoppingCart>();
-                foreach (var cartItem in shoppingCartItems)
+
+
+
+                ShoppingCartVM = new()
                 {
-                    if (cartItem.Product.StockQuantity >= cartItem.Count)
-                    {
-                        validShoppingCartItems.Add(cartItem);
-                    }
-                }
-
-                var previousAddresses = _unitOfWork.OrderHeader
-                   .GetAll(o => o.ApplicationUserId == userId)
-                   .Select(o => new SelectListItem
-                   {
-                       Text = $"{o.Name} , {o.StreetAddress}, {o.City}, {o.State}, {o.PostalCode} , {o.PhoneNumber} ",
-                       Value = o.StreetAddress
-                   })
-                   .Distinct()
-                   .ToList();
-
-                ViewBag.PreviousAddresses = previousAddresses;
-                var coupon = _unitOfWork.Coupon.GetAll();
-                var shoppingCartViewModel = new ShoppingCartVM
-                {
-                    ShoppingCartList = validShoppingCartItems,
-                    OrderHeader = new OrderHeader(),
-                    CouponList = coupon.ToList(),
-
+                    ShoppingCartList = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId, includeProperties: "Product"),
+                    OrderHeader = new(),
+                    CouponList = _unitOfWork.Coupon.GetAll().ToList(),
+                    ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId)
                 };
-
-
-                shoppingCartViewModel.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
-                shoppingCartViewModel.OrderHeader.Name = shoppingCartViewModel.OrderHeader.ApplicationUser.Name;
-                shoppingCartViewModel.OrderHeader.PhoneNumber = shoppingCartViewModel.OrderHeader.ApplicationUser.PhoneNumber;
-                shoppingCartViewModel.OrderHeader.StreetAddress = shoppingCartViewModel.OrderHeader.ApplicationUser.StreetAddress;
-                shoppingCartViewModel.OrderHeader.City = shoppingCartViewModel.OrderHeader.ApplicationUser.City;
-                shoppingCartViewModel.OrderHeader.State = shoppingCartViewModel.OrderHeader.ApplicationUser.State;
-                shoppingCartViewModel.OrderHeader.PostalCode = shoppingCartViewModel.OrderHeader.ApplicationUser.PostalCode;
-
-                foreach (var pric in shoppingCartViewModel.ShoppingCartList)
+                if (id == null)
                 {
-                    if (pric.Product.StockQuantity > 0)
+
+                    ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
+                    ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.Name;
+                    ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+                    ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+                    ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+                    ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+                    ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+                }
+                else
+                {
+                    ShoppingCartVM.MultipleAddress = _unitOfWork.MultipleAddress.Get(u => u.Id == id);
+
+                    ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.MultipleAddress.Name;
+                    ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.MultipleAddress.PhoneNumber;
+                    ShoppingCartVM.OrderHeader.City = ShoppingCartVM.MultipleAddress.City;
+                    ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.MultipleAddress.StreetAddress;
+                    ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.MultipleAddress.PostalCode;
+                    ShoppingCartVM.OrderHeader.State = ShoppingCartVM.MultipleAddress.State;
+                }
+                ShoppingCartVM.OrderHeader.OrderTotal = 0;
+
+                int totalCartCount = ShoppingCartVM.ShoppingCartList.Sum(c => c.Count);
+                foreach (var cart in ShoppingCartVM.ShoppingCartList)
+                {
+
+                    if (cart.Count > 5)
                     {
-                        pric.OfferPrice = GetPrice(pric);
-                        shoppingCartViewModel.OrderHeader.OrderTotal += (pric.OfferPrice * pric.Count);
+
+                        TempData["error"] = $"Limit exceeded: Maximum 5 units of {cart.Product.Name} are allowed.";
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    cart.OfferPrice = GetPrice(cart);
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.OfferPrice * cart.Count);
+
+
+                    if (cart.Count > cart.Product.StockQuantity)
+                    {
+
+                        TempData["error"] = $"Stock over: {cart.Product.Name} has insufficient stock.";
+                        return RedirectToAction(nameof(Index));
                     }
                 }
 
-                return View(shoppingCartViewModel);
+
+
+
+                return View(ShoppingCartVM);
+
+
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "An error occurred while loading the summary.";
                 return RedirectToAction("Error", "Home");
             }
-
-           
         }
 
 
 
 
-		[HttpPost]
+        [HttpPost]
 		[ActionName("setAddress")]
 		public IActionResult SummaryPost()
 		{
